@@ -18,7 +18,11 @@ var I18N = {
     event: "Wydarzenie",
     noSun: "Brak zwykłego wschodu/zachodu",
     noGeo: "Brak lokalizacji; wpisz współrzędne",
-    geoDenied: "Lokalizacja zablokowana; wpisz współrzędne"
+    geoDenied: "Lokalizacja zablokowana; wpisz współrzędne",
+    cityPh: "Szukaj miasta…",
+    noResults: "Nie znaleziono takiego miasta",
+    searchErr: "Wyszukiwanie nie działa; spróbuj ponownie lub wpisz współrzędne",
+    manual: "Współrzędne ręcznie"
   },
   en: {
     title: "Solar clock",
@@ -36,7 +40,11 @@ var I18N = {
     event: "Event",
     noSun: "No regular sunrise/sunset here",
     noGeo: "Location unavailable; enter coordinates",
-    geoDenied: "Location blocked; enter coordinates"
+    geoDenied: "Location blocked; enter coordinates",
+    cityPh: "Search city…",
+    noResults: "City not found",
+    searchErr: "Search failed; try again or enter coordinates",
+    manual: "Enter coordinates"
   },
   es: {
     title: "Reloj solar",
@@ -54,7 +62,11 @@ var I18N = {
     event: "Evento",
     noSun: "Sin amanecer/atardecer habitual",
     noGeo: "Ubicación no disponible; introduce las coordenadas",
-    geoDenied: "Ubicación bloqueada; introduce las coordenadas"
+    geoDenied: "Ubicación bloqueada; introduce las coordenadas",
+    cityPh: "Buscar ciudad…",
+    noResults: "Ciudad no encontrada",
+    searchErr: "Error de búsqueda; inténtalo de nuevo o introduce las coordenadas",
+    manual: "Coordenadas manuales"
   }
 };
 
