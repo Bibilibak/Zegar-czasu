@@ -140,7 +140,7 @@ function tick() {
 function apply() {
   $("lat").value = lat; $("lon").value = lon;
   try { localStorage.setItem("sw", JSON.stringify({ lat: lat, lon: lon, name: place })) } catch (e) {}
-  $("where").textContent = "📍 " + (place ? place + " · " : "") + lat + "°, " + lon + "°";
+  if ($("where")) $("where").textContent = "📍 " + (place ? place + " · " : "") + lat + "°, " + lon + "°";
   setMsg("sinceRise");
   tick()
 }
@@ -192,17 +192,21 @@ function searchCity(q) {
       if (id !== searchId) return;
       if (!d.results || !d.results.length) showHint(t("noResults")); else showResults(d.results)
     })
-    .catch(function () { if (id === searchId) showHint(t("searchErr")) })
+    .catch(function (err) {
+      if (id !== searchId) return;
+      console.error("Geocoding:", err);   // szczegóły w konsoli (F12)
+      showHint(t("searchErr") + " (" + ((err && err.message) || err) + ")")
+    })
 }
 
-$("city").oninput = function () {
+if ($("city")) $("city").oninput = function () {
   clearTimeout(searchTimer);
   var q = this.value.trim();
   if (q.length < 2) { searchId++; $("cityres").innerHTML = ""; return }
   searchTimer = setTimeout(function () { searchCity(q) }, 350)   // czekaj aż skończysz pisać
 };
 
-$("city").onkeydown = function (e) {
+if ($("city")) $("city").onkeydown = function (e) {
   if (e.key === "Enter") { var f = $("cityres").querySelector("button"); if (f) f.click() }
 };
 
@@ -212,7 +216,7 @@ document.querySelectorAll(".lang button").forEach(function (b) {
     setLang(b.getAttribute("data-lang"));
     setMsg(msgKey);   // przetłumacz komunikat pod odczytem
     lastL = "";       // wymuś odrysowanie listy wydarzeń
-    $("cityres").innerHTML = "";   // stare wyniki były w poprzednim języku
+    if ($("cityres")) $("cityres").innerHTML = "";   // stare wyniki były w poprzednim języku
     tick()
   }
 });
