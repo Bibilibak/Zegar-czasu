@@ -1,16 +1,145 @@
-:root{--bg:#fff7ea;--fg:#2b2118;--mut:#8a7863;--arc:#f3dfb8;--night:#d9c9ee;--sun:#f08a00;--card:#ffeed2;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14100c;--fg:#f6ead8;--mut:#a39278;--arc:#4a3a22;--night:#2a2340;--sun:#ffb02e;--card:#221a12}}
-:root[data-theme="dark"]{--bg:#14100c;--fg:#f6ead8;--mut:#a39278;--arc:#4a3a22;--night:#2a2340;--sun:#ffb02e;--card:#221a12}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;text-align:center;padding:16px}
-h1{font-size:18px;font-weight:600;margin:8px 0 0;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
-svg{width:100%;max-width:380px;height:auto}
-.row{display:flex;gap:8px;justify-content:center;max-width:380px;margin:0 auto 12px}
-.box{flex:1;background:var(--card);border-radius:14px;padding:10px 4px}
-.box b{display:block;font-size:20px}.box span{font-size:12px;color:var(--mut)}
-input,button{font:inherit;border-radius:10px;border:1px solid var(--arc);background:var(--card);color:var(--fg);padding:8px;width:90px}
-button{width:auto;background:var(--sun);color:#fff;border:0;font-weight:600;padding:8px 14px}
-.ev{max-width:380px;margin:0 auto 12px;text-align:left}
-.ev div{display:flex;justify-content:space-between;align-items:center;background:var(--card);border-radius:12px;padding:8px 12px;margin-bottom:6px}
-.ev i{font-style:normal;color:var(--mut);font-size:14px}.ev a{color:var(--mut);padding:0 6px;font-size:20px}
-#en{width:130px}#et{width:110px}
+/* ===== Kolory i zmienne (motyw jasny) ===== */
+:root {
+  --bg: #fff7ea;
+  --fg: #2b2118;
+  --mut: #8a7863;
+  --arc: #f3dfb8;
+  --night: #d9c9ee;
+  --sun: #f08a00;
+  --card: #ffeed2;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ===== Motyw ciemny (automatycznie według systemu) ===== */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14100c;
+    --fg: #f6ead8;
+    --mut: #a39278;
+    --arc: #4a3a22;
+    --night: #2a2340;
+    --sun: #ffb02e;
+    --card: #221a12;
+  }
+}
+
+/* ===== Motyw ciemny (ręcznie przez data-theme="dark") ===== */
+:root[data-theme="dark"] {
+  --bg: #14100c;
+  --fg: #f6ead8;
+  --mut: #a39278;
+  --arc: #4a3a22;
+  --night: #2a2340;
+  --sun: #ffb02e;
+  --card: #221a12;
+}
+
+html {
+  scroll-padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* ===== Układ strony ===== */
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+  text-align: center;
+  padding: 16px;
+}
+
+h1 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 8px 0 0;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--mut);
+}
+
+svg {
+  width: 100%;
+  max-width: 380px;
+  height: auto;
+}
+
+/* ===== Wiersze i kafelki ===== */
+.row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  max-width: 380px;
+  margin: 0 auto 12px;
+}
+
+.box {
+  flex: 1;
+  background: var(--card);
+  border-radius: 14px;
+  padding: 10px 4px;
+}
+
+.box b {
+  display: block;
+  font-size: 20px;
+}
+
+.box span {
+  font-size: 12px;
+  color: var(--mut);
+}
+
+/* ===== Pola formularza i przyciski ===== */
+input,
+button {
+  font: inherit;
+  border-radius: 10px;
+  border: 1px solid var(--arc);
+  background: var(--card);
+  color: var(--fg);
+  padding: 8px;
+  width: 90px;
+}
+
+button {
+  width: auto;
+  background: var(--sun);
+  color: #fff;
+  border: 0;
+  font-weight: 600;
+  padding: 8px 14px;
+}
+
+#en { width: 130px; }
+#et { width: 110px; }
+
+/* ===== Lista wydarzeń ===== */
+.ev {
+  max-width: 380px;
+  margin: 0 auto 12px;
+  text-align: left;
+}
+
+.ev div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--card);
+  border-radius: 12px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+}
+
+.ev i {
+  font-style: normal;
+  color: var(--mut);
+  font-size: 14px;
+}
+
+.ev a {
+  color: var(--mut);
+  padding: 0 6px;
+  font-size: 20px;
+}
