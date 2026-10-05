@@ -4,7 +4,8 @@
   --fg: #2b2118;
   --mut: #8a7863;
   --arc: #f3dfb8;
-  --night: #d9c9ee;
+  --night: #2f2a5a;   /* noc: ciemny granat */
+  --day: #ffd36a;     /* dzień: jasny żółty */
   --sun: #f08a00;
   --card: #ffeed2;
   box-sizing: border-box;
@@ -19,7 +20,8 @@
     --fg: #f6ead8;
     --mut: #a39278;
     --arc: #4a3a22;
-    --night: #2a2340;
+    --night: #3a3268;
+    --day: #ffd36a;
     --sun: #ffb02e;
     --card: #221a12;
   }
@@ -31,7 +33,8 @@
   --fg: #f6ead8;
   --mut: #a39278;
   --arc: #4a3a22;
-  --night: #2a2340;
+  --night: #3a3268;
+  --day: #ffd36a;
   --sun: #ffb02e;
   --card: #221a12;
 }
