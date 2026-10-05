@@ -8,19 +8,27 @@ try {
 
 function $(i) { return document.getElementById(i) }
 
+// Komunikat pod odczytem stopni zapamiętujemy jako klucz tłumaczenia,
+// żeby zmiana języka mogła go przetłumaczyć.
+var msgKey = "sinceRise";
+function setMsg(k) { msgKey = k; $("msg").textContent = t(k) }
+
 /* ===== Geometria tarczy ===== */
 function pt(t, rr) { rr = rr || r; return [cx - rr * Math.cos(t * R), cy - rr * Math.sin(t * R)] }
 function arc(a) { var p = pt(Math.min(a, 359.99)); return "M30 170 A140 140 0 " + (a > 180 ? 1 : 0) + " 1 " + p[0] + " " + p[1] }
 function put(id, a) { var p = pt(a); $(id).setAttribute("cx", p[0]); $(id).setAttribute("cy", p[1]) }
 
-/* ===== Podziałka i opisy (rysowane raz) ===== */
+/* ===== Podziałka i opisy (rysowane raz) =====
+   kreska co 5° (cienka), 15° (średnia), 90° (długa); opis co 30° */
 var tk = "", lb = "";
-for (var a = 0; a < 360; a += 15) {
-  var p = pt(a), q = pt(a, r - (a % 90 ? 8 : 18));
-  tk += '<line x1="' + p[0] + '" y1="' + p[1] + '" x2="' + q[0] + '" y2="' + q[1] + '"/>';
-  if (a % 90 == 0) {
-    var l = pt(a, r - 34);
-    lb += '<text x="' + l[0] + '" y="' + (l[1] + 4) + '">' + a + '°</text>'
+for (var a = 0; a < 360; a += 5) {
+  var len = a % 90 == 0 ? 18 : a % 30 == 0 ? 12 : a % 15 == 0 ? 8 : 4,
+    w = a % 90 == 0 ? 2 : a % 15 == 0 ? 1.5 : 1,
+    p = pt(a), q = pt(a, r - len);
+  tk += '<line x1="' + p[0] + '" y1="' + p[1] + '" x2="' + q[0] + '" y2="' + q[1] + '" stroke-width="' + w + '"/>';
+  if (a % 30 == 0) {
+    var l = pt(a, r - 32);
+    lb += '<text x="' + l[0] + '" y="' + (l[1] + 3.5) + '">' + a + '°</text>'
   }
 }
 $("ticks").innerHTML = tk; $("labels").innerHTML = lb;
@@ -62,9 +70,9 @@ function saveEv() {
 }
 
 $("add").onclick = function () {
-  var t = $("et").value;
-  if (!t) return;
-  evs.push({ n: $("en").value || "Wydarzenie", t: t });
+  var tm = $("et").value;
+  if (!tm) return;
+  evs.push({ n: $("en").value, t: tm });
   $("en").value = "";
   saveEv()
 };
@@ -86,7 +94,7 @@ function drawEv(cyc, k, now) {
     if (deg === null) return;
     var p = pt(deg, r + 16);
     g += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="9" fill="var(--fg)"/><text x="' + p[0] + '" y="' + (p[1] + 4) + '" fill="var(--bg)" font-size="11" font-weight="700" text-anchor="middle">' + (i + 1) + '</text>';
-    l += '<div><span>' + (i + 1) + '. ' + v.n.replace(/</g, "&lt;") + ' <i>(' + v.t + ')</i></span><span><b>' + deg.toFixed(1) + '°</b><a data-i="' + i + '">×</a></span></div>'
+    l += '<div><span>' + (i + 1) + '. ' + (v.n || t("event")).replace(/</g, "&lt;") + ' <i>(' + v.t + ')</i></span><span><b>' + deg.toFixed(1) + '°</b><a data-i="' + i + '">×</a></span></div>'
   });
   $("evs").innerHTML = g;
   if (l !== lastL) { $("evl").innerHTML = l; lastL = l }
@@ -104,9 +112,10 @@ function tick() {
     T = times(now), Y = times(d(-1)), N = times(d(1));
   if (!T || !Y || !N) {
     $("deg").textContent = "--°";
-    $("msg").textContent = "Brak zwykłego wschodu/zachodu";
+    setMsg("noSun");
     return
   }
+  if (msgKey === "noSun") setMsg("sinceRise");
 
   var cyc = now >= T.rise
     ? { a: T.rise, b: N.rise, set: T.set, rise: T.rise }
@@ -118,6 +127,8 @@ function tick() {
 
   drawEv(cyc, k, now);
   put("sun", deg); put("set", sd); put("noon", nd);
+  // wskazówka centralna: obrót o kąt "deg" wokół środka tarczy
+  $("hand").setAttribute("transform", "rotate(" + deg + " " + cx + " " + cy + ")");
   $("day").setAttribute("d", arc(sd));
   $("prog").setAttribute("d", deg > 0.1 ? arc(deg) : "");
   $("deg").textContent = deg.toFixed(1) + "°";
@@ -129,6 +140,7 @@ function tick() {
 function apply() {
   $("lat").value = lat; $("lon").value = lon;
   try { localStorage.setItem("sw", JSON.stringify({ lat: lat, lon: lon })) } catch (e) {}
+  setMsg("sinceRise");
   tick()
 }
 
@@ -138,13 +150,24 @@ $("go").onclick = function () {
 };
 
 $("loc").onclick = function () {
-  if (!navigator.geolocation) { $("msg").textContent = "Brak lokalizacji; wpisz współrzędne"; return }
+  if (!navigator.geolocation) { setMsg("noGeo"); return }
   navigator.geolocation.getCurrentPosition(
     function (p) { lat = +p.coords.latitude.toFixed(3); lon = +p.coords.longitude.toFixed(3); apply() },
-    function () { $("msg").textContent = "Lokalizacja zablokowana; wpisz współrzędne" }
+    function () { setMsg("geoDenied") }
   )
 };
 
+/* ===== Przełącznik języka ===== */
+document.querySelectorAll(".lang button").forEach(function (b) {
+  b.onclick = function () {
+    setLang(b.getAttribute("data-lang"));
+    setMsg(msgKey);   // przetłumacz komunikat pod odczytem
+    lastL = "";       // wymuś odrysowanie listy wydarzeń
+    tick()
+  }
+});
+
 /* ===== Start ===== */
+setLang(detectLang());
 apply();
 setInterval(tick, 1000);
