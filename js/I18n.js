@@ -22,7 +22,8 @@ var I18N = {
     cityPh: "Szukaj miasta…",
     noResults: "Nie znaleziono takiego miasta",
     searchErr: "Wyszukiwanie nie działa; spróbuj ponownie lub wpisz współrzędne",
-    manual: "Współrzędne ręcznie"
+    manual: "Współrzędne ręcznie",
+    or: "lub"
   },
   en: {
     title: "Solar clock",
@@ -44,7 +45,8 @@ var I18N = {
     cityPh: "Search city…",
     noResults: "City not found",
     searchErr: "Search failed; try again or enter coordinates",
-    manual: "Enter coordinates"
+    manual: "Enter coordinates",
+    or: "or"
   },
   es: {
     title: "Reloj solar",
@@ -66,7 +68,8 @@ var I18N = {
     cityPh: "Buscar ciudad…",
     noResults: "Ciudad no encontrada",
     searchErr: "Error de búsqueda; inténtalo de nuevo o introduce las coordenadas",
-    manual: "Coordenadas manuales"
+    manual: "Coordenadas manuales",
+    or: "o"
   }
 };
 
