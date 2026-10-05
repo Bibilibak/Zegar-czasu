@@ -201,7 +201,7 @@ button {
 /* ===== Wyszukiwanie miasta ===== */
 .place {
   max-width: 380px;
-  margin: 0 auto 6px;
+  margin: 0 auto 8px;
 }
 
 .place input {
@@ -212,8 +212,28 @@ button {
 
 .results {
   max-width: 380px;
-  margin: 0 auto 12px;
+  margin: 0 auto;
   text-align: left;
+}
+
+/* separator „lub” między wyszukiwaniem a przyciskiem lokalizacji */
+.or {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 380px;
+  margin: 16px auto;
+  color: var(--mut);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.or::before,
+.or::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--arc);
 }
 
 .results button {
