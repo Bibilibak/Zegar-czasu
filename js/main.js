@@ -24,10 +24,10 @@ var tk = "", lb = "";
 for (var a = 0; a < 360; a += 5) {
   var len = a % 90 == 0 ? 18 : a % 30 == 0 ? 12 : a % 15 == 0 ? 8 : 4,
     w = a % 90 == 0 ? 2 : a % 15 == 0 ? 1.5 : 1,
-    p = pt(a), q = pt(a, r - len);
+    p = pt(a, r - 7), q = pt(a, r - 7 - len);   // kreski zaczynają się przy wewnętrznej krawędzi pierścienia
   tk += '<line x1="' + p[0] + '" y1="' + p[1] + '" x2="' + q[0] + '" y2="' + q[1] + '" stroke-width="' + w + '"/>';
   if (a % 30 == 0) {
-    var l = pt(a, r - 32);
+    var l = pt(a, r - 40);
     lb += '<text x="' + l[0] + '" y="' + (l[1] + 3.5) + '">' + a + '°</text>'
   }
 }
