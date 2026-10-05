@@ -1,1 +1,150 @@
+/* ===== Stałe i stan ===== */
+var R = Math.PI / 180, cx = 170, cy = 170, r = 140, lat = 52.23, lon = 21.01;
 
+try {
+  var s = JSON.parse(localStorage.getItem("sw") || "null");
+  if (s) { lat = s.lat; lon = s.lon }
+} catch (e) {}
+
+function $(i) { return document.getElementById(i) }
+
+/* ===== Geometria tarczy ===== */
+function pt(t, rr) { rr = rr || r; return [cx - rr * Math.cos(t * R), cy - rr * Math.sin(t * R)] }
+function arc(a) { var p = pt(Math.min(a, 359.99)); return "M30 170 A140 140 0 " + (a > 180 ? 1 : 0) + " 1 " + p[0] + " " + p[1] }
+function put(id, a) { var p = pt(a); $(id).setAttribute("cx", p[0]); $(id).setAttribute("cy", p[1]) }
+
+/* ===== Podziałka i opisy (rysowane raz) ===== */
+var tk = "", lb = "";
+for (var a = 0; a < 360; a += 15) {
+  var p = pt(a), q = pt(a, r - (a % 90 ? 8 : 18));
+  tk += '<line x1="' + p[0] + '" y1="' + p[1] + '" x2="' + q[0] + '" y2="' + q[1] + '"/>';
+  if (a % 90 == 0) {
+    var l = pt(a, r - 34);
+    lb += '<text x="' + l[0] + '" y="' + (l[1] + 4) + '">' + a + '°</text>'
+  }
+}
+$("ticks").innerHTML = tk; $("labels").innerHTML = lb;
+
+/* ===== Obliczenia astronomiczne (algorytm NOAA) ===== */
+// gam: kąt ułamkowy roku (w radianach)
+function gam(d) {
+  var n = Math.floor((d - Date.UTC(d.getUTCFullYear(), 0, 0)) / 864e5);
+  return 2 * Math.PI / 365 * (n - 1 + (d.getUTCHours() - 12) / 24)
+}
+
+// sol: równanie czasu (eq, minuty) i deklinacja Słońca (dc, radiany)
+function sol(g) {
+  return {
+    eq: 229.18 * (.000075 + .001868 * Math.cos(g) - .032077 * Math.sin(g) - .014615 * Math.cos(2 * g) - .040849 * Math.sin(2 * g)),
+    dc: .006918 - .399912 * Math.cos(g) + .070257 * Math.sin(g) - .006758 * Math.cos(2 * g) + .000907 * Math.sin(2 * g) - .002697 * Math.cos(3 * g) + .00148 * Math.sin(3 * g)
+  }
+}
+
+// times: wschód i zachód Słońca (ms UTC) dla danego dnia i położenia
+function times(day) {
+  var b = new Date(Date.UTC(day.getFullYear(), day.getMonth(), day.getDate(), 12)), S = sol(gam(b)),
+    c = (Math.cos(90.833 * R) / (Math.cos(lat * R) * Math.cos(S.dc)) - Math.tan(lat * R) * Math.tan(S.dc));
+  if (c > 1 || c < -1) return null;
+  var ha = Math.acos(c) / R, m0 = Date.UTC(day.getFullYear(), day.getMonth(), day.getDate());
+  return {
+    rise: m0 + (720 - 4 * (lon + ha) - S.eq) * 6e4,
+    set: m0 + (720 - 4 * (lon - ha) - S.eq) * 6e4
+  }
+}
+
+/* ===== Wydarzenia użytkownika ===== */
+var evs = [];
+try { evs = JSON.parse(localStorage.getItem("swe") || "[]") } catch (e) {}
+
+function saveEv() {
+  try { localStorage.setItem("swe", JSON.stringify(evs)) } catch (e) {}
+  tick()
+}
+
+$("add").onclick = function () {
+  var t = $("et").value;
+  if (!t) return;
+  evs.push({ n: $("en").value || "Wydarzenie", t: t });
+  $("en").value = "";
+  saveEv()
+};
+
+$("evl").onclick = function (e) {
+  var i = e.target.getAttribute("data-i");
+  if (i !== null) { evs.splice(+i, 1); saveEv() }
+};
+
+var lastL = "";
+function drawEv(cyc, k, now) {
+  var g = "", l = "";
+  evs.forEach(function (v, i) {
+    var hm = v.t.split(":"), deg = null;
+    for (var o = -1; o <= 1; o++) {
+      var dt = new Date(now.getFullYear(), now.getMonth(), now.getDate() + o, +hm[0], +hm[1]);
+      if (dt >= cyc.a && dt < cyc.b) { deg = k * (dt - cyc.a) }
+    }
+    if (deg === null) return;
+    var p = pt(deg, r + 16);
+    g += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="9" fill="var(--fg)"/><text x="' + p[0] + '" y="' + (p[1] + 4) + '" fill="var(--bg)" font-size="11" font-weight="700" text-anchor="middle">' + (i + 1) + '</text>';
+    l += '<div><span>' + (i + 1) + '. ' + v.n.replace(/</g, "&lt;") + ' <i>(' + v.t + ')</i></span><span><b>' + deg.toFixed(1) + '°</b><a data-i="' + i + '">×</a></span></div>'
+  });
+  $("evs").innerHTML = g;
+  if (l !== lastL) { $("evl").innerHTML = l; lastL = l }
+}
+
+/* ===== Odświeżanie zegara (co sekundę) ===== */
+function tick() {
+  var now = new Date(), S = sol(gam(now));
+  var u = now.getUTCHours() * 60 + now.getUTCMinutes() + now.getUTCSeconds() / 60,
+    H = ((u + S.eq + 4 * lon) / 4 - 180) * R;
+  var alt = Math.asin(Math.sin(lat * R) * Math.sin(S.dc) + Math.cos(lat * R) * Math.cos(S.dc) * Math.cos(H)) / R;
+  $("alt").textContent = alt.toFixed(1) + "°";
+
+  var d = function (n) { return new Date(now.getTime() + n * 864e5) },
+    T = times(now), Y = times(d(-1)), N = times(d(1));
+  if (!T || !Y || !N) {
+    $("deg").textContent = "--°";
+    $("msg").textContent = "Brak zwykłego wschodu/zachodu";
+    return
+  }
+
+  var cyc = now >= T.rise
+    ? { a: T.rise, b: N.rise, set: T.set, rise: T.rise }
+    : { a: Y.rise, b: T.rise, set: Y.set, rise: Y.rise };
+  var k = 360 / (cyc.b - cyc.a),
+    deg = Math.min(359.99, k * (now - cyc.a)),
+    sd = k * (cyc.set - cyc.a),
+    nd = k * ((cyc.rise + cyc.set) / 2 - cyc.a);
+
+  drawEv(cyc, k, now);
+  put("sun", deg); put("set", sd); put("noon", nd);
+  $("day").setAttribute("d", arc(sd));
+  $("prog").setAttribute("d", deg > 0.1 ? arc(deg) : "");
+  $("deg").textContent = deg.toFixed(1) + "°";
+  $("nd").textContent = nd.toFixed(1) + "°";
+  $("sd").textContent = sd.toFixed(1) + "°"
+}
+
+/* ===== Lokalizacja ===== */
+function apply() {
+  $("lat").value = lat; $("lon").value = lon;
+  try { localStorage.setItem("sw", JSON.stringify({ lat: lat, lon: lon })) } catch (e) {}
+  tick()
+}
+
+$("go").onclick = function () {
+  var a = parseFloat($("lat").value), b = parseFloat($("lon").value);
+  if (!isNaN(a) && !isNaN(b)) { lat = a; lon = b; apply() }
+};
+
+$("loc").onclick = function () {
+  if (!navigator.geolocation) { $("msg").textContent = "Brak lokalizacji; wpisz współrzędne"; return }
+  navigator.geolocation.getCurrentPosition(
+    function (p) { lat = +p.coords.latitude.toFixed(3); lon = +p.coords.longitude.toFixed(3); apply() },
+    function () { $("msg").textContent = "Lokalizacja zablokowana; wpisz współrzędne" }
+  )
+};
+
+/* ===== Start ===== */
+apply();
+setInterval(tick, 1000);
