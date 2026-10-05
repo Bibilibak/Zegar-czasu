@@ -3,7 +3,7 @@
 Interaktywny zegar słoneczny napisany w HTML, CSS i JavaScript.
 
 ## Uruchomienie
-Otwórz stronę: https://twoja-nazwa.github.io/Zegar-czasu
+Otwórz stronę: https://Bibilibak.github.io/Zegar-czasu
 
 ## Plan rozwoju
 - [ ] Równanie czasu
