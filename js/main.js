@@ -1,9 +1,9 @@
 /* ===== Stałe i stan ===== */
-var R = Math.PI / 180, cx = 170, cy = 170, r = 140, lat = 52.23, lon = 21.01;
+var R = Math.PI / 180, cx = 170, cy = 170, r = 140, lat = 52.23, lon = 21.01, place = "";
 
 try {
   var s = JSON.parse(localStorage.getItem("sw") || "null");
-  if (s) { lat = s.lat; lon = s.lon }
+  if (s) { lat = s.lat; lon = s.lon; place = s.name || "" }
 } catch (e) {}
 
 function $(i) { return document.getElementById(i) }
@@ -139,22 +139,71 @@ function tick() {
 /* ===== Lokalizacja ===== */
 function apply() {
   $("lat").value = lat; $("lon").value = lon;
-  try { localStorage.setItem("sw", JSON.stringify({ lat: lat, lon: lon })) } catch (e) {}
+  try { localStorage.setItem("sw", JSON.stringify({ lat: lat, lon: lon, name: place })) } catch (e) {}
+  $("where").textContent = "📍 " + (place ? place + " · " : "") + lat + "°, " + lon + "°";
   setMsg("sinceRise");
   tick()
 }
 
 $("go").onclick = function () {
   var a = parseFloat($("lat").value), b = parseFloat($("lon").value);
-  if (!isNaN(a) && !isNaN(b)) { lat = a; lon = b; apply() }
+  if (!isNaN(a) && !isNaN(b)) { lat = a; lon = b; place = ""; apply() }
 };
 
 $("loc").onclick = function () {
   if (!navigator.geolocation) { setMsg("noGeo"); return }
   navigator.geolocation.getCurrentPosition(
-    function (p) { lat = +p.coords.latitude.toFixed(3); lon = +p.coords.longitude.toFixed(3); apply() },
+    function (p) { lat = +p.coords.latitude.toFixed(3); lon = +p.coords.longitude.toFixed(3); place = ""; apply() },
     function () { setMsg("geoDenied") }
   )
+};
+
+/* ===== Wyszukiwanie miasta po nazwie =====
+   Open-Meteo Geocoding API: darmowe, bez klucza, działa z przeglądarki. */
+var searchTimer = null, searchId = 0;
+
+function showHint(txt) {
+  var box = $("cityres"), d = document.createElement("div");
+  d.className = "hint"; d.textContent = txt;
+  box.innerHTML = ""; box.appendChild(d)
+}
+
+function showResults(list) {
+  var box = $("cityres"); box.innerHTML = "";
+  list.forEach(function (c) {
+    var b = document.createElement("button");
+    b.textContent = [c.name, c.admin1 && c.admin1 !== c.name ? c.admin1 : "", c.country || ""].filter(Boolean).join(", ");
+    b.onclick = function () {
+      lat = +(+c.latitude).toFixed(3);
+      lon = +(+c.longitude).toFixed(3);
+      place = [c.name, c.country || ""].filter(Boolean).join(", ");
+      $("city").value = ""; box.innerHTML = "";
+      apply()
+    };
+    box.appendChild(b)
+  })
+}
+
+function searchCity(q) {
+  var id = ++searchId;   // numer zapytania: ignorujemy spóźnione odpowiedzi
+  fetch("https://geocoding-api.open-meteo.com/v1/search?name=" + encodeURIComponent(q) + "&count=5&format=json&language=" + lang)
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json() })
+    .then(function (d) {
+      if (id !== searchId) return;
+      if (!d.results || !d.results.length) showHint(t("noResults")); else showResults(d.results)
+    })
+    .catch(function () { if (id === searchId) showHint(t("searchErr")) })
+}
+
+$("city").oninput = function () {
+  clearTimeout(searchTimer);
+  var q = this.value.trim();
+  if (q.length < 2) { searchId++; $("cityres").innerHTML = ""; return }
+  searchTimer = setTimeout(function () { searchCity(q) }, 350)   // czekaj aż skończysz pisać
+};
+
+$("city").onkeydown = function (e) {
+  if (e.key === "Enter") { var f = $("cityres").querySelector("button"); if (f) f.click() }
 };
 
 /* ===== Przełącznik języka ===== */
@@ -163,6 +212,7 @@ document.querySelectorAll(".lang button").forEach(function (b) {
     setLang(b.getAttribute("data-lang"));
     setMsg(msgKey);   // przetłumacz komunikat pod odczytem
     lastL = "";       // wymuś odrysowanie listy wydarzeń
+    $("cityres").innerHTML = "";   // stare wyniki były w poprzednim języku
     tick()
   }
 });
