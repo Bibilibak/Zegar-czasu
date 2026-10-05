@@ -1,1 +1,99 @@
 # Zegar-czasu
+<!DOCTYPE html>
+<html lang="pl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zegar słoneczny</title>
+<style>
+:root{--bg:#fff7ea;--fg:#2b2118;--mut:#8a7863;--arc:#f3dfb8;--night:#d9c9ee;--sun:#f08a00;--card:#ffeed2;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14100c;--fg:#f6ead8;--mut:#a39278;--arc:#4a3a22;--night:#2a2340;--sun:#ffb02e;--card:#221a12}}
+:root[data-theme="dark"]{--bg:#14100c;--fg:#f6ead8;--mut:#a39278;--arc:#4a3a22;--night:#2a2340;--sun:#ffb02e;--card:#221a12}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;text-align:center;padding:16px}
+h1{font-size:18px;font-weight:600;margin:8px 0 0;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+svg{width:100%;max-width:380px;height:auto}
+.row{display:flex;gap:8px;justify-content:center;max-width:380px;margin:0 auto 12px}
+.box{flex:1;background:var(--card);border-radius:14px;padding:10px 4px}
+.box b{display:block;font-size:20px}.box span{font-size:12px;color:var(--mut)}
+input,button{font:inherit;border-radius:10px;border:1px solid var(--arc);background:var(--card);color:var(--fg);padding:8px;width:90px}
+button{width:auto;background:var(--sun);color:#fff;border:0;font-weight:600;padding:8px 14px}
+.ev{max-width:380px;margin:0 auto 12px;text-align:left}
+.ev div{display:flex;justify-content:space-between;align-items:center;background:var(--card);border-radius:12px;padding:8px 12px;margin-bottom:6px}
+.ev i{font-style:normal;color:var(--mut);font-size:14px}.ev a{color:var(--mut);padding:0 6px;font-size:20px}
+#en{width:130px}#et{width:110px}
+</style></head><body>
+<h1>Zegar słoneczny</h1>
+<svg viewBox="0 0 340 340" aria-label="Tarcza">
+ <circle cx="170" cy="170" r="140" fill="none" stroke="var(--night)" stroke-width="14"/>
+ <path id="day" fill="none" stroke="var(--arc)" stroke-width="14"/>
+ <path id="prog" fill="none" stroke="var(--sun)" stroke-width="14" stroke-linecap="round"/>
+ <g id="ticks" stroke="var(--mut)" stroke-width="1.5"></g>
+ <g id="labels" fill="var(--mut)" font-size="11" text-anchor="middle"></g>
+ <circle id="noon" r="5" fill="var(--fg)"/>
+ <circle id="set" r="5" fill="var(--bg)" stroke="var(--fg)" stroke-width="2"/>
+ <g id="evs"></g>
+ <circle id="sun" r="12" fill="var(--sun)" stroke="var(--bg)" stroke-width="3"/>
+ <text id="deg" x="170" y="175" fill="var(--fg)" font-size="44" font-weight="700" text-anchor="middle">--°</text>
+ <text id="msg" x="170" y="200" fill="var(--mut)" font-size="12" text-anchor="middle">od wschodu</text>
+</svg>
+<div class="row">
+ <div class="box"><b id="alt">--°</b><span>Wysokość słońca</span></div>
+ <div class="box"><b id="nd">--°</b><span>● Górowanie</span></div>
+ <div class="box"><b id="sd">--°</b><span>○ Zachód</span></div>
+</div>
+<div class="row">
+ <input id="en" placeholder="Np. Lekcja"><input id="et" type="time" value="08:00"><button id="add">Dodaj</button>
+</div>
+<div class="ev" id="evl"></div>
+<div class="row">
+ <input id="lat" type="number" step="0.01" placeholder="Szer.">
+ <input id="lon" type="number" step="0.01" placeholder="Dł.">
+ <button id="go">Ustaw</button>
+</div>
+<div class="row"><button id="loc">Użyj mojej lokalizacji</button></div>
+<script>
+var R=Math.PI/180,cx=170,cy=170,r=140,lat=52.23,lon=21.01;
+try{var s=JSON.parse(localStorage.getItem("sw")||"null");if(s){lat=s.lat;lon=s.lon}}catch(e){}
+function $(i){return document.getElementById(i)}
+function pt(t,rr){rr=rr||r;return[cx-rr*Math.cos(t*R),cy-rr*Math.sin(t*R)]}
+function arc(a){var p=pt(Math.min(a,359.99));return"M30 170 A140 140 0 "+(a>180?1:0)+" 1 "+p[0]+" "+p[1]}
+function put(id,a){var p=pt(a);$(id).setAttribute("cx",p[0]);$(id).setAttribute("cy",p[1])}
+var tk="",lb="";
+for(var a=0;a<360;a+=15){var p=pt(a),q=pt(a,r-(a%90?8:18));tk+='<line x1="'+p[0]+'" y1="'+p[1]+'" x2="'+q[0]+'" y2="'+q[1]+'"/>';
+ if(a%90==0){var l=pt(a,r-34);lb+='<text x="'+l[0]+'" y="'+(l[1]+4)+'">'+a+'°</text>'}}
+$("ticks").innerHTML=tk;$("labels").innerHTML=lb;
+function gam(d){var n=Math.floor((d-Date.UTC(d.getUTCFullYear(),0,0))/864e5);return 2*Math.PI/365*(n-1+(d.getUTCHours()-12)/24)}
+function sol(g){return{eq:229.18*(.000075+.001868*Math.cos(g)-.032077*Math.sin(g)-.014615*Math.cos(2*g)-.040849*Math.sin(2*g)),
+ dc:.006918-.399912*Math.cos(g)+.070257*Math.sin(g)-.006758*Math.cos(2*g)+.000907*Math.sin(2*g)-.002697*Math.cos(3*g)+.00148*Math.sin(3*g)}}
+function times(day){var b=new Date(Date.UTC(day.getFullYear(),day.getMonth(),day.getDate(),12)),S=sol(gam(b)),
+ c=(Math.cos(90.833*R)/(Math.cos(lat*R)*Math.cos(S.dc))-Math.tan(lat*R)*Math.tan(S.dc));
+ if(c>1||c<-1)return null;var ha=Math.acos(c)/R,m0=Date.UTC(day.getFullYear(),day.getMonth(),day.getDate());
+ return{rise:m0+(720-4*(lon+ha)-S.eq)*6e4,set:m0+(720-4*(lon-ha)-S.eq)*6e4}}
+var evs=[];try{evs=JSON.parse(localStorage.getItem("swe")||"[]")}catch(e){}
+function saveEv(){try{localStorage.setItem("swe",JSON.stringify(evs))}catch(e){}tick()}
+$("add").onclick=function(){var t=$("et").value;if(!t)return;evs.push({n:$("en").value||"Wydarzenie",t:t});$("en").value="";saveEv()};
+$("evl").onclick=function(e){var i=e.target.getAttribute("data-i");if(i!==null){evs.splice(+i,1);saveEv()}};
+var lastL="";
+function drawEv(cyc,k,now){var g="",l="";
+ evs.forEach(function(v,i){var hm=v.t.split(":"),deg=null;
+  for(var o=-1;o<=1;o++){var dt=new Date(now.getFullYear(),now.getMonth(),now.getDate()+o,+hm[0],+hm[1]);if(dt>=cyc.a&&dt<cyc.b){deg=k*(dt-cyc.a)}}
+  if(deg===null)return;var p=pt(deg,r+16);
+  g+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="9" fill="var(--fg)"/><text x="'+p[0]+'" y="'+(p[1]+4)+'" fill="var(--bg)" font-size="11" font-weight="700" text-anchor="middle">'+(i+1)+'</text>';
+  l+='<div><span>'+(i+1)+'. '+v.n.replace(/</g,"&lt;")+' <i>('+v.t+')</i></span><span><b>'+deg.toFixed(1)+'°</b><a data-i="'+i+'">×</a></span></div>'});
+ $("evs").innerHTML=g;if(l!==lastL){$("evl").innerHTML=l;lastL=l}}
+function tick(){var now=new Date(),S=sol(gam(now));
+ var u=now.getUTCHours()*60+now.getUTCMinutes()+now.getUTCSeconds()/60,H=((u+S.eq+4*lon)/4-180)*R;
+ var alt=Math.asin(Math.sin(lat*R)*Math.sin(S.dc)+Math.cos(lat*R)*Math.cos(S.dc)*Math.cos(H))/R;
+ $("alt").textContent=alt.toFixed(1)+"°";
+ var d=function(n){return new Date(now.getTime()+n*864e5)},T=times(now),Y=times(d(-1)),N=times(d(1));
+ if(!T||!Y||!N){$("deg").textContent="--°";$("msg").textContent="Brak zwykłego wschodu/zachodu";return}
+ var cyc=now>=T.rise?{a:T.rise,b:N.rise,set:T.set,rise:T.rise}:{a:Y.rise,b:T.rise,set:Y.set,rise:Y.rise};
+ var k=360/(cyc.b-cyc.a),deg=Math.min(359.99,k*(now-cyc.a)),sd=k*(cyc.set-cyc.a),nd=k*((cyc.rise+cyc.set)/2-cyc.a);
+ drawEv(cyc,k,now);put("sun",deg);put("set",sd);put("noon",nd);
+ $("day").setAttribute("d",arc(sd));$("prog").setAttribute("d",deg>0.1?arc(deg):"");
+ $("deg").textContent=deg.toFixed(1)+"°";$("nd").textContent=nd.toFixed(1)+"°";$("sd").textContent=sd.toFixed(1)+"°"}
+function apply(){$("lat").value=lat;$("lon").value=lon;try{localStorage.setItem("sw",JSON.stringify({lat:lat,lon:lon}))}catch(e){}tick()}
+$("go").onclick=function(){var a=parseFloat($("lat").value),b=parseFloat($("lon").value);if(!isNaN(a)&&!isNaN(b)){lat=a;lon=b;apply()}};
+$("loc").onclick=function(){if(!navigator.geolocation){$("msg").textContent="Brak lokalizacji; wpisz współrzędne";return}
+ navigator.geolocation.getCurrentPosition(function(p){lat=+p.coords.latitude.toFixed(3);lon=+p.coords.longitude.toFixed(3);apply()},function(){$("msg").textContent="Lokalizacja zablokowana; wpisz współrzędne"})};
+apply();setInterval(tick,1000);
+</script></body></html>
