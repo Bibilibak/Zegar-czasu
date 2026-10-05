@@ -197,3 +197,59 @@ button {
   padding: 0 6px;
   font-size: 20px;
 }
+
+/* ===== Wyszukiwanie miasta ===== */
+.place {
+  max-width: 380px;
+  margin: 0 auto 6px;
+}
+
+.place input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+}
+
+.results {
+  max-width: 380px;
+  margin: 0 auto 12px;
+  text-align: left;
+}
+
+.results button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--card);
+  color: var(--fg);
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.results .hint {
+  color: var(--mut);
+  font-size: 14px;
+  padding: 6px 12px;
+}
+
+.where {
+  font-size: 13px;
+  color: var(--mut);
+  margin: -6px 0 14px;
+}
+
+.manual {
+  max-width: 380px;
+  margin: 0 auto 12px;
+  color: var(--mut);
+  font-size: 13px;
+}
+
+.manual summary {
+  cursor: pointer;
+  margin-bottom: 8px;
+}
