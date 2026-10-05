@@ -60,9 +60,60 @@ h1 {
 }
 
 svg {
+  display: block;
   width: 100%;
   max-width: 380px;
   height: auto;
+  margin: 0 auto;
+}
+
+/* opisy stopni z obwódką w kolorze tła, żeby wskazówka ich nie zasłaniała */
+#labels {
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+/* ===== Przełącznik języka (prawy górny róg) ===== */
+.lang {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.lang button {
+  background: transparent;
+  color: var(--mut);
+  border: 1px solid var(--arc);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.lang button[aria-pressed="true"] {
+  background: var(--sun);
+  border-color: var(--sun);
+  color: #fff;
+}
+
+/* ===== Odczyt stopni pod tarczą ===== */
+.reading {
+  margin: 4px 0 14px;
+}
+
+.reading b {
+  display: block;
+  font-size: 44px;
+  line-height: 1.1;
+  font-weight: 700;
+}
+
+.reading span {
+  font-size: 12px;
+  color: var(--mut);
 }
 
 /* ===== Wiersze i kafelki ===== */
