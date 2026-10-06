@@ -1,9 +1,9 @@
 /* ===== Stałe i stan ===== */
-var R = Math.PI / 180, cx = 170, cy = 170, r = 140, lat = 52.23, lon = 21.01, place = "", tz = "";
+var R = Math.PI / 180, cx = 170, cy = 170, r = 140, lat = 52.23, lon = 21.01, place = "";
 
 try {
   var s = JSON.parse(localStorage.getItem("sw") || "null");
-  if (s) { lat = s.lat; lon = s.lon; place = s.name || ""; tz = s.tz || "" }
+  if (s) { lat = s.lat; lon = s.lon; place = s.name || "" }
 } catch (e) {}
 
 function $(i) { return document.getElementById(i) }
@@ -12,47 +12,7 @@ function $(i) { return document.getElementById(i) }
 // żeby zmiana języka mogła go przetłumaczyć.
 var msgKey = "sinceRise";
 var live = null;   // bieżące dane słońca dla widoku 3D: { lat, dec (stopnie), deg }
-function txt(id, s) { var e = $(id); if (e) e.textContent = s }   // bezpiecznie, gdy elementu brak
-function setMsg(k) {
-  msgKey = k; $("msg").textContent = t(k);
-  if (k !== "sinceRise") txt("riseT", "")
-}
-
-/* ===== Czas zegarowy w wybranym miejscu =====
-   tz = nazwa strefy IANA (np. "Europe/Madrid") z wyszukiwarki miast.
-   Pusta = strefa urządzenia (geolokalizacja, współrzędne ręczne). */
-var fmtCache = {};
-function tzFmt() {
-  if (!fmtCache[tz]) {
-    var o = { hour12: false, year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric" };
-    try { if (tz) o.timeZone = tz; fmtCache[tz] = new Intl.DateTimeFormat("en-GB", o) }
-    catch (e) { delete o.timeZone; fmtCache[tz] = new Intl.DateTimeFormat("en-GB", o) }   // nieznana strefa -> urządzenie
-  }
-  return fmtCache[tz]
-}
-// rozbija chwilę (ms UTC) na datę i godzinę w strefie miejsca
-function tzParts(ms) {
-  var o = {};
-  tzFmt().formatToParts(new Date(ms)).forEach(function (p) { o[p.type] = +p.value });
-  if (o.hour === 24) o.hour = 0;
-  return o
-}
-// przesunięcie strefy względem UTC (ms) w danej chwili (uwzględnia czas letni)
-function tzOffset(ms) {
-  var o = tzParts(ms);
-  return Date.UTC(o.year, o.month - 1, o.day, o.hour, o.minute, o.second) - Math.floor(ms / 1000) * 1000
-}
-// "dzień, godzina:minuta według zegara miejsca" -> chwila (ms UTC); dzień może wyjść poza miesiąc
-function zoned(y, mo, d, h, mi) {
-  var g = Date.UTC(y, mo, d, h, mi), t1 = g - tzOffset(g);
-  return g - tzOffset(t1)
-}
-function pad(n) { return (n < 10 ? "0" : "") + n }
-function hm(ms) { var o = tzParts(ms); return pad(o.hour) + ":" + pad(o.minute) }
-function utcLabel(ms) {
-  var m = Math.round(tzOffset(ms) / 6e4), a = Math.abs(m);
-  return "UTC" + (m < 0 ? "−" : "+") + Math.floor(a / 60) + (a % 60 ? ":" + pad(a % 60) : "")
-}
+function setMsg(k) { msgKey = k; $("msg").textContent = t(k) }
 
 /* ===== Geometria tarczy ===== */
 function pt(t, rr) { rr = rr || r; return [cx - rr * Math.cos(t * R), cy - rr * Math.sin(t * R)] }
@@ -125,11 +85,11 @@ $("evl").onclick = function (e) {
 
 var lastL = "";
 function drawEv(cyc, k, now) {
-  var g = "", l = "", c = tzParts(now.getTime());   // dzisiejsza data w wybranym miejscu
+  var g = "", l = "";
   evs.forEach(function (v, i) {
     var hh = v.t.split(":"), deg = null;
     for (var o = -1; o <= 1; o++) {
-      var dt = zoned(c.year, c.month - 1, c.day + o, +hh[0], +hh[1]);   // godzina wydarzenia = zegar miejsca
+      var dt = new Date(now.getFullYear(), now.getMonth(), now.getDate() + o, +hh[0], +hh[1]);
       if (dt >= cyc.a && dt < cyc.b) { deg = k * (dt - cyc.a) }
     }
     if (deg === null) return;
@@ -160,7 +120,6 @@ function tick() {
   if (!cyc) {
     live = null;
     $("deg").textContent = "--°";
-    txt("nt", ""); txt("st", ""); txt("riseT", "");
     setMsg("noSun");
     return
   }
@@ -182,19 +141,12 @@ function tick() {
   $("sd").textContent = sd.toFixed(1) + "°";
 
   live = { lat: lat, dec: S.dc / R, deg: deg };   // dla js/view3d.js
-
-  // godziny zegarowe w wybranym miejscu
-  var nowMs = now.getTime();
-  txt("lt", "🕒 " + hm(nowMs) + " " + utcLabel(nowMs));
-  txt("nt", hm((cyc.rise + cyc.set) / 2));
-  txt("st", hm(cyc.set));
-  txt("riseT", msgKey === "sinceRise" ? " · " + hm(cyc.rise) : "")
 }
 
 /* ===== Lokalizacja ===== */
 function apply() {
   $("lat").value = lat; $("lon").value = lon;
-  try { localStorage.setItem("sw", JSON.stringify({ lat: lat, lon: lon, name: place, tz: tz })) } catch (e) {}
+  try { localStorage.setItem("sw", JSON.stringify({ lat: lat, lon: lon, name: place })) } catch (e) {}
   if ($("where")) $("where").textContent = "📍 " + (place ? place + " · " : "") + lat + "°, " + lon + "°";
   setMsg("sinceRise");
   tick()
@@ -202,13 +154,13 @@ function apply() {
 
 $("go").onclick = function () {
   var a = parseFloat($("lat").value), b = parseFloat($("lon").value);
-  if (!isNaN(a) && !isNaN(b)) { lat = a; lon = b; place = ""; tz = ""; apply() }
+  if (!isNaN(a) && !isNaN(b)) { lat = a; lon = b; place = ""; apply() }
 };
 
 $("loc").onclick = function () {
   if (!navigator.geolocation) { setMsg("noGeo"); return }
   navigator.geolocation.getCurrentPosition(
-    function (p) { lat = +p.coords.latitude.toFixed(3); lon = +p.coords.longitude.toFixed(3); place = ""; tz = ""; apply() },
+    function (p) { lat = +p.coords.latitude.toFixed(3); lon = +p.coords.longitude.toFixed(3); place = ""; apply() },
     function () { setMsg("geoDenied") }
   )
 };
@@ -232,7 +184,6 @@ function showResults(list) {
       lat = +(+c.latitude).toFixed(3);
       lon = +(+c.longitude).toFixed(3);
       place = [c.name, c.country || ""].filter(Boolean).join(", ");
-      tz = c.timezone || "";
       $("city").value = ""; box.innerHTML = "";
       apply()
     };
@@ -276,6 +227,13 @@ document.querySelectorAll(".lang button").forEach(function (b) {
     if (window.Sun3D) Sun3D.refresh();               // przetłumacz widok 3D
     tick()
   }
+});
+
+/* ===== Przycisk widoku 3D =====
+   Obsługę przycisku dodaje js/view3d.js. Jeśli ten plik się nie załadował
+   (brak na serwerze albo błąd), pokaż komunikat zamiast "nic się nie dzieje". */
+if ($("viewBtn")) $("viewBtn").addEventListener("click", function () {
+  if (!window.Sun3D) setMsg("no3d")
 });
 
 /* ===== Start ===== */
