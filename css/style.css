@@ -280,22 +280,7 @@ button {
   margin-bottom: 8px;
 }
 
-/* godzina zegarowa pod stopniami (górowanie, zachód) */
-.box small {
-  display: block;
-  margin-top: 2px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--fg);
-}
 
-/* godzina lokalna w osobnej linii pod nazwą miejsca */
-.where #lt {
-  display: block;
-  margin-top: 2px;
-  color: var(--fg);
-  font-weight: 600;
-}
 
 /* ===== Górny pasek: widok 3D (lewy róg) + język (prawy róg) ===== */
 .top {
