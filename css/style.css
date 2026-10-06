@@ -5,7 +5,9 @@
   --mut: #8a7863;
   --arc: #f3dfb8;
   --night: #2f2a5a;   /* noc: ciemny granat */
-  --day: #ffd36a;     /* dzień: jasny żółty */
+  --day: #ffd36a;
+  --v3a: #854f0b;   /* tekst kąta obrotu (pomarańcz) */
+  --v3b: #185fa5;   /* tekst kąta wysokości (niebieski) */     /* dzień: jasny żółty */
   --sun: #f08a00;
   --card: #ffeed2;
   box-sizing: border-box;
@@ -22,6 +24,8 @@
     --arc: #4a3a22;
     --night: #3a3268;
     --day: #ffd36a;
+    --v3a: #f0b24a;
+    --v3b: #85b7eb;
     --sun: #ffb02e;
     --card: #221a12;
   }
@@ -35,6 +39,8 @@
   --arc: #4a3a22;
   --night: #3a3268;
   --day: #ffd36a;
+  --v3a: #f0b24a;
+  --v3b: #85b7eb;
   --sun: #ffb02e;
   --card: #221a12;
 }
@@ -272,4 +278,133 @@ button {
 .manual summary {
   cursor: pointer;
   margin-bottom: 8px;
+}
+
+/* godzina zegarowa pod stopniami (górowanie, zachód) */
+.box small {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+/* godzina lokalna w osobnej linii pod nazwą miejsca */
+.where #lt {
+  display: block;
+  margin-top: 2px;
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* ===== Górny pasek: widok 3D (lewy róg) + język (prawy róg) ===== */
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.view-btn {
+  background: transparent;
+  color: var(--mut);
+  border: 1px solid var(--arc);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.view-btn[aria-pressed="true"] {
+  background: var(--sun);
+  border-color: var(--sun);
+  color: #fff;
+}
+
+/* ===== Wizualizacja 3D ===== */
+#v3svg {
+  touch-action: none;
+  cursor: grab;
+}
+
+.v3lb { font-size: 11px; fill: var(--mut); }
+.v3lb, .v3A, .v3B {
+  paint-order: stroke;   /* obwódka w kolorze tła dla czytelności */
+  stroke: var(--card);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.v3A  { font-size: 12px; font-weight: 600; fill: var(--v3a); }
+.v3B  { font-size: 12px; font-weight: 600; fill: var(--v3b); }
+
+.box span.v3a::before,
+.box span.v3b::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+.box span.v3a::before { background: #ef9f27; }
+.box span.v3b::before { background: #378add; }
+
+.v3cap,
+.v3hint {
+  max-width: 380px;
+  margin: 8px auto 18px;
+  font-size: 12px;
+  color: var(--mut);
+}
+
+.v3rw {
+  display: grid;
+  grid-template-columns: 120px 1fr 56px;
+  align-items: center;
+  gap: 8px;
+  max-width: 380px;
+  margin: 8px auto;
+  font-size: 14px;
+  text-align: left;
+}
+
+.v3rw span:last-child {
+  text-align: right;
+  font-weight: 600;
+}
+
+#v3 input[type="range"] {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  accent-color: var(--sun);
+}
+
+.v3btns {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  max-width: 380px;
+  margin: 10px auto 0;
+}
+
+.v3btns button {
+  background: var(--card);
+  color: var(--fg);
+  border: 1px solid var(--arc);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.v3btns button.main {
+  background: var(--sun);
+  border-color: var(--sun);
+  color: #fff;
+  font-weight: 600;
 }
