@@ -47,7 +47,8 @@ var I18N = {
     v3N: "N",
     v3S: "S",
     v3E: "E",
-    v3W: "W"
+    v3W: "W",
+    no3d: "Wizualizacja 3D się nie załadowała; sprawdź plik js/view3d.js"
   },
   en: {
     title: "Solar clock",
@@ -94,7 +95,8 @@ var I18N = {
     v3N: "N",
     v3S: "S",
     v3E: "E",
-    v3W: "W"
+    v3W: "W",
+    no3d: "3D view failed to load; check the file js/view3d.js"
   },
   es: {
     title: "Reloj solar",
@@ -141,7 +143,8 @@ var I18N = {
     v3N: "N",
     v3S: "S",
     v3E: "E",
-    v3W: "O"
+    v3W: "O",
+    no3d: "La vista 3D no se cargó; revisá el archivo js/view3d.js"
   }
 };
 
