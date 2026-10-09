@@ -1,9 +1,9 @@
 /* ===== Stałe i stan ===== */
-var R = Math.PI / 180, cx = 170, cy = 170, r = 140, lat = 52.23, lon = 21.01, place = "";
+var R = Math.PI / 180, cx = 170, cy = 170, r = 140, lat = 52.23, lon = 21.01, place = "", tz = "";
 
 try {
   var s = JSON.parse(localStorage.getItem("sw") || "null");
-  if (s) { lat = s.lat; lon = s.lon; place = s.name || "" }
+  if (s) { lat = s.lat; lon = s.lon; place = s.name || ""; tz = s.tz || "" }
 } catch (e) {}
 
 function $(i) { return document.getElementById(i) }
@@ -13,6 +13,33 @@ function $(i) { return document.getElementById(i) }
 var msgKey = "sinceRise";
 var live = null;   // bieżące dane słońca dla widoku 3D: { lat, dec (stopnie), deg }
 function setMsg(k) { msgKey = k; $("msg").textContent = t(k) }
+
+/* ===== Strefa czasowa miejsca - tylko do wydarzeń, niczego nie wyświetla =====
+   Godzina wydarzenia ("08:00") znaczy godzinę zegara w wybranym mieście, a nie w Twoim
+   urządzeniu. tz = nazwa strefy IANA z wyszukiwarki miast; pusta = strefa urządzenia. */
+var fmtCache = {};
+function tzFmt() {
+  if (!fmtCache[tz]) {
+    var o = { hour12: false, year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric" };
+    try { if (tz) o.timeZone = tz; fmtCache[tz] = new Intl.DateTimeFormat("en-GB", o) }
+    catch (e) { delete o.timeZone; fmtCache[tz] = new Intl.DateTimeFormat("en-GB", o) }   // nieznana strefa -> urządzenie
+  }
+  return fmtCache[tz]
+}
+function tzParts(ms) {   // data i godzina w mieście dla chwili ms (UTC)
+  var o = {};
+  tzFmt().formatToParts(new Date(ms)).forEach(function (p) { o[p.type] = +p.value });
+  if (o.hour === 24) o.hour = 0;
+  return o
+}
+function tzOffset(ms) {
+  var o = tzParts(ms);
+  return Date.UTC(o.year, o.month - 1, o.day, o.hour, o.minute, o.second) - Math.floor(ms / 1000) * 1000
+}
+function zoned(y, mo, d, h, mi) {   // "dzień, godzina:minuta według zegara miasta" -> chwila (ms UTC)
+  var g = Date.UTC(y, mo, d, h, mi), t1 = g - tzOffset(g);
+  return g - tzOffset(t1)
+}
 
 /* ===== Geometria tarczy ===== */
 function pt(t, rr) { rr = rr || r; return [cx - rr * Math.cos(t * R), cy - rr * Math.sin(t * R)] }
@@ -85,11 +112,11 @@ $("evl").onclick = function (e) {
 
 var lastL = "";
 function drawEv(cyc, k, now) {
-  var g = "", l = "";
+  var g = "", l = "", c = tzParts(now.getTime());   // dzisiejsza data w wybranym mieście
   evs.forEach(function (v, i) {
     var hh = v.t.split(":"), deg = null;
     for (var o = -1; o <= 1; o++) {
-      var dt = new Date(now.getFullYear(), now.getMonth(), now.getDate() + o, +hh[0], +hh[1]);
+      var dt = zoned(c.year, c.month - 1, c.day + o, +hh[0], +hh[1]);   // godzina wg zegara miasta
       if (dt >= cyc.a && dt < cyc.b) { deg = k * (dt - cyc.a) }
     }
     if (deg === null) return;
@@ -146,7 +173,7 @@ function tick() {
 /* ===== Lokalizacja ===== */
 function apply() {
   $("lat").value = lat; $("lon").value = lon;
-  try { localStorage.setItem("sw", JSON.stringify({ lat: lat, lon: lon, name: place })) } catch (e) {}
+  try { localStorage.setItem("sw", JSON.stringify({ lat: lat, lon: lon, name: place, tz: tz })) } catch (e) {}
   if ($("where")) $("where").textContent = "📍 " + (place ? place + " · " : "") + lat + "°, " + lon + "°";
   setMsg("sinceRise");
   tick()
@@ -154,13 +181,13 @@ function apply() {
 
 $("go").onclick = function () {
   var a = parseFloat($("lat").value), b = parseFloat($("lon").value);
-  if (!isNaN(a) && !isNaN(b)) { lat = a; lon = b; place = ""; apply() }
+  if (!isNaN(a) && !isNaN(b)) { lat = a; lon = b; place = ""; tz = ""; apply() }
 };
 
 $("loc").onclick = function () {
   if (!navigator.geolocation) { setMsg("noGeo"); return }
   navigator.geolocation.getCurrentPosition(
-    function (p) { lat = +p.coords.latitude.toFixed(3); lon = +p.coords.longitude.toFixed(3); place = ""; apply() },
+    function (p) { lat = +p.coords.latitude.toFixed(3); lon = +p.coords.longitude.toFixed(3); place = ""; tz = ""; apply() },
     function () { setMsg("geoDenied") }
   )
 };
@@ -184,6 +211,7 @@ function showResults(list) {
       lat = +(+c.latitude).toFixed(3);
       lon = +(+c.longitude).toFixed(3);
       place = [c.name, c.country || ""].filter(Boolean).join(", ");
+      tz = c.timezone || "";
       $("city").value = ""; box.innerHTML = "";
       apply()
     };
