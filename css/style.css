@@ -393,3 +393,10 @@ button {
   color: #fff;
   font-weight: 600;
 }
+
+/* odczyt względem najbliższego znacznika (np. "12° 30′ do południa") */
+.near {
+  margin-top: 6px;
+  font-size: 22px;
+  font-weight: 700;
+}
