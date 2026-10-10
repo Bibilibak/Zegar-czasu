@@ -12,7 +12,7 @@ function $(i) { return document.getElementById(i) }
 // żeby zmiana języka mogła go przetłumaczyć.
 var msgKey = "sinceRise";
 var live = null;   // bieżące dane słońca dla widoku 3D: { lat, dec (stopnie), deg }
-function setMsg(k) { msgKey = k; $("msg").textContent = t(k) }
+function setMsg(k) { msgKey = k; $("msg").textContent = k === "sinceRise" ? "" : t(k) }
 
 /* ===== Strefa czasowa miejsca - tylko do wydarzeń, niczego nie wyświetla =====
    Godzina wydarzenia ("08:00") znaczy godzinę zegara w wybranym mieście, a nie w Twoim
