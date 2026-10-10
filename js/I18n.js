@@ -48,7 +48,15 @@ var I18N = {
     v3S: "S",
     v3E: "E",
     v3W: "W",
-    no3d: "Wizualizacja 3D się nie załadowała; sprawdź plik js/view3d.js"
+    no3d: "Wizualizacja 3D się nie załadowała; sprawdź plik js/view3d.js",
+    nb0: "do wschodu",
+    na0: "po wschodzie",
+    nb1: "do południa",
+    na1: "po południu",
+    nb2: "do zachodu",
+    na2: "po zachodzie",
+    nb3: "do północy",
+    na3: "po północy"
   },
   en: {
     title: "Solar clock",
@@ -96,7 +104,15 @@ var I18N = {
     v3S: "S",
     v3E: "E",
     v3W: "W",
-    no3d: "3D view failed to load; check the file js/view3d.js"
+    no3d: "3D view failed to load; check the file js/view3d.js",
+    nb0: "to sunrise",
+    na0: "after sunrise",
+    nb1: "to noon",
+    na1: "after noon",
+    nb2: "to sunset",
+    na2: "after sunset",
+    nb3: "to midnight",
+    na3: "after midnight"
   },
   es: {
     title: "Reloj solar",
@@ -144,7 +160,15 @@ var I18N = {
     v3S: "S",
     v3E: "E",
     v3W: "O",
-    no3d: "La vista 3D no se cargó; revisá el archivo js/view3d.js"
+    no3d: "La vista 3D no se cargó; revisá el archivo js/view3d.js",
+    nb0: "antes del amanecer",
+    na0: "después del amanecer",
+    nb1: "antes del mediodía",
+    na1: "después del mediodía",
+    nb2: "antes del atardecer",
+    na2: "después del atardecer",
+    nb3: "antes de la medianoche",
+    na3: "después de la medianoche"
   }
 };
 
