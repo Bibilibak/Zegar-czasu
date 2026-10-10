@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Zegar słoneczny</title>
   <base href="/daylight-clock/">
-  <link rel="stylesheet" href="/daylight-clock/css/style.css?v=5">
+  <link rel="stylesheet" href="/daylight-clock/css/style.css?v=6">
 </head>
 <body>
   <div class="top">
@@ -48,9 +48,8 @@
   </svg>
 
   <div class="reading">
-    <b id="deg">--°</b>
-    <span id="msg">od wschodu</span>
     <div class="near" id="near"></div>
+    <span id="msg"></span>
   </div>
   </div>
 
@@ -82,9 +81,10 @@
   <div class="where"><span id="where"></span></div>
 
   <div class="row">
+    <div class="box"><b id="deg">--°</b><span data-i18n="since">Od wschodu</span></div>
     <div class="box"><b id="alt">--°</b><span data-i18n="altitude">Wysokość słońca</span></div>
     <div class="box"><b id="nd">--°</b><span data-i18n="noon">● Górowanie</span></div>
-    <div class="box"><b id="sd">--°</b><span data-i18n="sunset">○ Zachód</span></div>
+    <div class="box"><b id="sd">--°</b><span data-i18n="sunset">○ Światło</span></div>
   </div>
 
   <div class="row">
@@ -116,8 +116,8 @@
     </div>
   </details>
 
-  <script src="/daylight-clock/js/I18n.js?v=5"></script>
-  <script src="/daylight-clock/js/main.js?v=5"></script>
-  <script src="/daylight-clock/js/view3d.js?v=5"></script>
+  <script src="/daylight-clock/js/I18n.js?v=6"></script>
+  <script src="/daylight-clock/js/main.js?v=6"></script>
+  <script src="/daylight-clock/js/view3d.js?v=6"></script>
 </body>
 </html>
