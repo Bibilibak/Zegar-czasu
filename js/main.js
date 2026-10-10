@@ -128,6 +128,17 @@ function drawEv(cyc, k, now) {
   if (l !== lastL) { $("evl").innerHTML = l; lastL = l }
 }
 
+/* ===== Odczyt względem najbliższego znacznika =====
+   Znaczniki doby: wschód (0°), południe, zachód, północ (środek nocy).
+   Zamiast dużej liczby od wschodu: małe "12° 30′ do południa". 1′ (minuta łuku) = 4 s. */
+function nearText(deg, nd, sd) {
+  var m = [[0, 0], [nd, 1], [sd, 2], [(sd + 360) / 2, 3], [360, 0]], best = m[0];
+  m.forEach(function (x) { if (Math.abs(deg - x[0]) < Math.abs(deg - best[0])) best = x });
+  var diff = deg - best[0], am = Math.round(Math.abs(diff) * 60), d = Math.floor(am / 60), mm = am % 60,
+    val = d ? d + "°" + (mm ? " " + mm + "′" : "") : mm + "′";
+  return val + " " + t((diff < 0 ? "nb" : "na") + best[1])
+}
+
 /* ===== Odświeżanie zegara (co sekundę) ===== */
 function tick() {
   var now = new Date(), S = sol(gam(now));
@@ -147,6 +158,7 @@ function tick() {
   if (!cyc) {
     live = null;
     $("deg").textContent = "--°";
+    if ($("near")) $("near").textContent = "";
     setMsg("noSun");
     return
   }
@@ -166,6 +178,7 @@ function tick() {
   $("deg").textContent = deg.toFixed(1) + "°";
   $("nd").textContent = nd.toFixed(1) + "°";
   $("sd").textContent = sd.toFixed(1) + "°";
+  if ($("near")) $("near").textContent = nearText(deg, nd, sd);
 
   live = { lat: lat, dec: S.dc / R, deg: deg };   // dla js/view3d.js
 }
